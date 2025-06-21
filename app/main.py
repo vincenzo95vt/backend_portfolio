@@ -10,6 +10,7 @@ from app.db import collections
 from app.db import db
 from dotenv import load_dotenv
 import os
+
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')
 
@@ -25,6 +26,8 @@ templates = Jinja2Templates(directory='app/templates')
 def home(request: Request):
     return templates.TemplateResponse("welcome.html", {"request": request})
 
+
+
 # ACCEDEMOS AL PANEL DE CONTROL
 @app.get('/dashboard', response_class=HTMLResponse)
 async def dashboard(resquest: Request):
@@ -36,7 +39,7 @@ async def dashboard(resquest: Request):
         'projects': projects,
         'experience': experience,
         'education': education,
-        'about_me': about_me
+        'about_me': about_me,
     }
     return templates.TemplateResponse("dashboard.html", {
         "request": resquest,
@@ -136,7 +139,8 @@ async def updateAboutMe(
 @app.get('/edit/experience', response_class= HTMLResponse)
 async def editExperience(request: Request):
     experience = await collections.experience.find().to_list(length=None)
-    return templates.TemplateResponse('about_edit.html',{
+    
+    return templates.TemplateResponse('exp_edit.html',{
         'request': request,
         'about': experience
     })
