@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.requests import Request 
+from fastapi import Request 
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import Form
@@ -20,8 +20,13 @@ client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
 
 templates = Jinja2Templates(directory='app/templates')
-# ACCEDEMOS AL PANEL DE CONTROL
+#ACCEDEMOS AL INICIO O BIENVENIDA
 @app.get('/', response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("welcome.html", {"request": request})
+
+# ACCEDEMOS AL PANEL DE CONTROL
+@app.get('/dashboard', response_class=HTMLResponse)
 async def dashboard(resquest: Request):
     projects = await collections.projects.find({}).to_list(length=None)
     experience = await collections.experience.find({}).to_list(length=None)
@@ -99,4 +104,59 @@ async def raw_data():
         results.append(doc)
     return results
     
+#API PARA HACER UPDATE DE SOBRE MI
+@app.get('/aboutMe/edit', response_class= HTMLResponse)
+async def edit_aboutMe(request: Request):
+    about = await collections.aboutMe.find_one({})
+    return templates.TemplateResponse('about_edit.html',{
+        'request': request,
+        'about': about
+    })
+@app.post('/update/aboutMe')
+async def updateAboutMe(
+    nombre: str = Form(...),
+    titulo: str = Form(...),
+    descripcion: str = Form(...),
+    softSkills: str = Form(...),
+    hardSkills: str = Form(...),
+    idiomas: str = Form(...)
+):
+    data = {
+        'nombre': nombre,
+        'titulo': titulo,
+        'descripcion': descripcion,
+        'softSkills': [s.strip() for s in softSkills.split(',')],
+        'hardSkills': [h.strip() for h in hardSkills.split(',')],
+        'idiomas': [i.strip() for i in idiomas.split(',')]
+    }
+
+    await collections.aboutMe.update_one({}, {'$set': data}, upsert = True)
+    return RedirectResponse(url= '/dashboard', status_code=303)
+
+@app.get('/edit/experience', response_class= HTMLResponse)
+async def editExperience(request: Request):
+    experience = await collections.experience.find().to_list(length=None)
+    return templates.TemplateResponse('about_edit.html',{
+        'request': request,
+        'about': experience
+    })
+
+@app.post('/add/experience')
+async def addExperience(
+    empresa: str = Form(...),
+    periodo: str=  Form(...),
+    puesto: str = Form(...),
+    descripcion: str =  Form(...),
+    tecnologias: str =  Form(...)
+):
+    data = {
+        'empresa': empresa,
+        'periodo' : periodo,
+        'puesto': puesto,
+        'descripcion': descripcion,
+        'tecnologias': [t.strip() for t in tecnologias.split(',')]
+    }
+
+    await collections.experience.insert_one(data)
+    return RedirectResponse(url='/dashboard', status_code=303)
     
