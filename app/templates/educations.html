@@ -39,7 +39,7 @@
                 <div class="text-muted small">{{ edu['inicio'] }} - {{ edu['fin'] }}</div>
               </div>
               <div class="d-flex flex-row gap-2">
-                <a href="/edit/education/{{ edu['_id'] }}" class="btn btn-outline-primary btn-sm">✏️ Editar</a>
+                <a href="/show/updateEducation/{{ edu['_id'] }}" class="btn btn-outline-primary btn-sm">✏️ Editar</a>
                 <form method="post" action="/delete/education/{{ edu['_id'] }}">
                   <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que quieres eliminar esta formación?')">❌ Eliminar</button>
                 </form>

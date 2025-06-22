@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">
+        {% if education and '_id' in education %}
+          ✏️ Editar Formación Académica
+        {% else %}
+          ➕ Añadir Nueva Formación
+        {% endif %}
+      </h3>
+    </div>
+
+    <div class="card-body text-dark bg-light">
+      <form method="post" action="{% if education and '_id' in education %}/update/education{% else %}/add/educationToDDBB{% endif %}">
+        {% if education and '_id' in education %}
+          <input type="hidden" name="id" value="{{ education['_id'] }}">
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label">Título</label>
+          <input type="text" name="titulo" class="form-control" value="{{ education.get('titulo', '') }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Institución</label>
+          <input type="text" name="institucion" class="form-control" value="{{ education.get('institucion', '') }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea name="descripcion" class="form-control" rows="4">{{ education.get('descripcion', '') }}</textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Inicio</label>
+          <input type="text" name="inicio" class="form-control" value="{{ education.get('inicio', '') }}">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Fin</label>
+          <input type="text" name="fin" class="form-control" value="{{ education.get('fin', '') }}">
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button type="submit" class="btn btn-success">💾 Guardar cambios</button>
+          <a href="/edit/education/list" class="btn btn-secondary">Volver</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

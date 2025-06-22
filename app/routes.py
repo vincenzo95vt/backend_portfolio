@@ -208,5 +208,12 @@ async def show_education(request: Request):
         'request': request,
         'education': educations
     })
-
+#NO ME FUNCIONA ESTA RUTA ARREGLARA
+@router.get('show/updateEducation/{id}', response_class= HTMLResponse)
+async def show_update_experience(id: str, request: Request):
+    education = await collections.education.find_one({'_id': ObjectId(id)})
+    return templates.TemplateResponse('edit_education.html', {
+        'request': request,
+        'education': education
+    })
 __all__ = ['router']
