@@ -1,0 +1,35 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">💼 Mis Experiencias Profesionales</h3>
+    </div>
+    <div class="card-body text-dark bg-light">
+
+      {% if experiences %}
+        <ul class="list-group">
+          {% for exp in experiences %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ exp['empresa'] }}</strong> - {{ exp['puesto'] }}
+                <div class="text-muted small">{{ exp['periodo'] }}</div>
+              </div>
+              <a href="/edit/experience/{{ exp['_id'] }}" class="btn btn-outline-primary btn-sm">✏️ Editar</a>
+            </li>
+          {% endfor %}
+          <a href="/add/new_experience/" class="btn btn-primary align-self-end mt-3 btn-sm"> ➕ Añadir experiencia</a>
+        </ul>
+      {% else %}
+        <p>No hay experiencias aún.</p>
+      {% endif %}
+
+      <a href="/dashboard" class="btn btn-secondary mt-3">Volver</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+</body>
+</html>

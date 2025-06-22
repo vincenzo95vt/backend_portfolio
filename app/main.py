@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi import Form
 from fastapi.responses import RedirectResponse
 from fastapi.responses import JSONResponse
+from bson import ObjectId
 import motor.motor_asyncio
 from app.db import collections
 from app.db import db
@@ -136,16 +137,29 @@ async def updateAboutMe(
     await collections.aboutMe.update_one({}, {'$set': data}, upsert = True)
     return RedirectResponse(url= '/dashboard', status_code=303)
 
-@app.get('/edit/experience', response_class= HTMLResponse)
-async def editExperience(request: Request):
-    experience = await collections.experience.find().to_list(length=None)
+@app.get('/edit/experiences', response_class= HTMLResponse)
+async def showExperiences(request: Request):
     
-    return templates.TemplateResponse('exp_edit.html',{
+    experiences = await collections.experience.find().to_list(length=None)
+    return templates.TemplateResponse('experiences.html',{
         'request': request,
-        'about': experience
+        'experiences': experiences
     })
 
-@app.post('/add/experience')
+@app.get('/edit/experience/{id}', response_class=HTMLResponse)
+async def edit_experience(id: str, request:Request):
+    experience = await collections.experience.find_one({'_id': ObjectId(id)})
+    return templates.TemplateResponse('edit_experience.html', {
+        'request': request,
+        'experience': experience
+    })
+@app.get('/add/new_experience', response_class=HTMLResponse)
+async def add_experience(request: Request):
+    return templates.TemplateResponse('edit_experience.html', {
+        'request': request,
+        'experience': {}
+    })
+@app.post('/add/experienceToDDBB')
 async def addExperience(
     empresa: str = Form(...),
     periodo: str=  Form(...),
@@ -163,4 +177,22 @@ async def addExperience(
 
     await collections.experience.insert_one(data)
     return RedirectResponse(url='/dashboard', status_code=303)
+@ap.post('/update/experiende')
+async def update_experience(
+    id: str = Form(...),
+    empresa: str = Form(...),
+    puesto: str = Form(...),
+    descripcion: str = Form(...),
+    tecnologias: str = Form(...)
+):
+    data = {
+        'empresa': empresa,
+        'puesto': puesto,
+        'descripcion': descripcion,
+        'tecnologias': [t.strip() for t in tecnologias.split(',')]
+    }
+    await collections.experience.update_one(
+        {'_id': ObjectId(id)},
+        {'$set': data})
+    return RedirectResponse(url='/edit/experiences', status_code=303)
     
