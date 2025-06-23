@@ -13,7 +13,7 @@
     </div>
 
     <div class="card-body text-dark bg-light">
-      <form method="post" action="{% if project and '_id' in project %}/update/project/{{ project['_id'] }}{% else %}/add/projectToDDBB{% endif %}">
+      <form method="post" action="{% if project and '_id' in project %}/update/project/{{ project['_id'] }}{% else %}/add/new_project{% endif %}">
         {% if project and '_id' in project %}
           <input type="hidden" name="id" value="{{ project['_id'] }}">
         {% endif %}
