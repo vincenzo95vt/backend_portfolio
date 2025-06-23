@@ -1,23 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if success %}
-  <div id="flash-message" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-    {% if success == 'added' %}
-      ✅ Formación añadida correctamente.
-    {% elif success == 'deleted' %}
-      🗑️ Formación eliminada correctamente.
-    {% elif success == 'updated' %}
-      ✅ Formación actualizada correctamente.
+  <div id="flash-message2" class="alert alert-success alert-dismissible fade show" role="alert">
+    {% if success == 'added' %}✅ Experiencia añadida correctamente.
+    {% elif success == 'deleted' %}🗑️ Experiencia eliminada correctamente.
+    {% elif success == 'updated'%} ✅ Experiencia actualizada correctamente.
     {% endif %}
   </div>
 
   <script>
     setTimeout(() => {
-      const flash = document.getElementById('flash-message');
-      if (flash) flash.classList.remove('show');
-    }, 2500);
-    setTimeout(() => {
-      const flash = document.getElementById('flash-message');
+      const flash = document.getElementById('flash-message2');
       if (flash) flash.remove();
     }, 3000);
   </script>
@@ -48,7 +41,7 @@
           {% endfor %}
         </ul>
 
-        <a href="/add/new_education/" class="btn btn-primary align-self-end mt-3 btn-sm">➕ Añadir formación</a>
+        <a href="/show/add_new_education" class="btn btn-primary align-self-end mt-3 btn-sm">➕ Añadir formación</a>
       {% else %}
         <p>No hay registros educativos aún.</p>
       {% endif %}

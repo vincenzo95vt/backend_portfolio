@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.responses import JSONResponse
 from bson import ObjectId
 import motor.motor_asyncio
+from typing import Optional
 from app.db import collections
 from app.db import db
 from dotenv import load_dotenv
@@ -201,19 +202,119 @@ async def delete_experience(id : str):
 
 @router.get('/show/education', response_class=Request)
 async def show_education(request: Request):
+    success = request.query_params.get('success')
     educations = await collections.education.find({}).to_list(length=None)
     if not educations:
         educations = []
     return templates.TemplateResponse('educations.html', {
         'request': request,
-        'education': educations
+        'education': educations,
+        'success': success
     })
-#NO ME FUNCIONA ESTA RUTA ARREGLARA
-@router.get('show/updateEducation/{id}', response_class= HTMLResponse)
+
+@router.get('/show/updateEducation/{id}', response_class= HTMLResponse)
 async def show_update_experience(id: str, request: Request):
     education = await collections.education.find_one({'_id': ObjectId(id)})
     return templates.TemplateResponse('edit_education.html', {
         'request': request,
         'education': education
     })
+
+@router.post('/update/education/{id}')
+async def update_education(
+    id: str,
+    titulo: str = Form(...),
+    institucion: str = Form(...),
+    descripcion: str = Form(...),
+    inicio: str = Form(...),
+    fin: str = Form(...),
+    estado: str = Form(None),
+    ):
+    data = {
+        'titulo' : titulo,
+        'institucion' : institucion,
+        'descripcion' : descripcion,
+        'inicio' : inicio,
+        'fin' : fin
+    }
+    if estado is not None:
+        data['estado'] = estado
+    await collections.education.update_one({'_id': ObjectId(id)}, {'$set': data})
+    return RedirectResponse('/show/education?success=updated', status_code=303)
+
+@router.get('/show/add_new_education', response_class= HTMLResponse)
+async def show_add_new_education(request: Request):
+    return templates.TemplateResponse('edit_education.html', {
+        'request': request,
+        'education': {}
+    })
+
+@router.post('/add/new_education')
+async def add_new_education(
+    titulo: str = Form(...),
+    institucion: str = Form(...),
+    descripcion: str = Form(...),
+    inicio: str = Form(...),
+    fin: str = Form(...),
+    estado: str = Form(None),
+    ):
+    data = {
+         'titulo' : titulo,
+        'institucion' : institucion,
+        'descripcion' : descripcion,
+        'inicio' : inicio,
+        'fin' : fin
+    }
+    if estado is not None:
+        data['estado'] = estado
+    await collections.education.insert_one(data)
+    return RedirectResponse('/show/education?success=added', status_code=303)
+
+@router.post('/delete/education/{id}')
+async def delete_education(id: str):
+    await collections.education.delete_one({'_id': ObjectId(id)})
+    return RedirectResponse('/show/education?success=deleted', status_code=303)
+
+@router.get('/show/allProjects', response_class= HTMLResponse)
+async def show_all_projects(request: Request):
+    success = request.query_params.get('success')
+    projects = await collections.projects.find({}).to_list(length=None)
+    return templates.TemplateResponse('projects.html',{
+        'request': request,
+        'projects': projects,
+        'success': success
+    })
+
+@router.get('/show/editProject/{id}')
+async def show_project(id: str, request: Request):
+    project = await collections.projects.find_one({'_id': ObjectId(id)})
+    return templates.TemplateResponse('edit_project.html',{
+        'request': request,
+        'project': project
+    })
+
+@router.post('/update/project/{id}')
+async def update_project(
+    id: str,
+    nombre: str = Form(...),
+    descripcion: str = Form(...),
+    tecnologias: str = Form(...),
+    link: str = Form(...),
+    github: str = Form(...),
+    githubBackend: str = Form(...),
+    backendOffline: Optional[str] = Form(None)
+):
+    data = {
+        'nombre': nombre,
+        'descripcion': descripcion,
+        'tecnologias': [t.strip() for t in tecnologias.split(',')],
+        'link': link,
+        'github': github,
+        'githubBackend': githubBackend,
+        'backendOffline': backendOffline
+    }
+    await collections.projects.update_one({'_id': ObjectId(id)}, {'$set': data})
+    return RedirectResponse('/show/allProjects?success=updated', status_code=303)
+
+    
 __all__ = ['router']

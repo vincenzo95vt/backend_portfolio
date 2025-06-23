@@ -14,7 +14,7 @@
     </div>
 
     <div class="card-body text-dark bg-light">
-      <form method="post" action="{% if education and '_id' in education %}/update/education{% else %}/add/educationToDDBB{% endif %}">
+      <form method="post" action="{% if education and '_id' in education %}/update/education/{{education['_id']}}{% else %}/add/new_education{% endif %}">
         {% if education and '_id' in education %}
           <input type="hidden" name="id" value="{{ education['_id'] }}">
         {% endif %}
