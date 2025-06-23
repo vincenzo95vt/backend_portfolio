@@ -45,19 +45,12 @@ async def dashboard(resquest: Request):
         'data': data
     })
 # COMENZAMOS A CREAR LAS APIS PARA ACCEDER A ELLAS
-@router.get('/api/allData')
-async def all_data():
-    result = {}
 
-    collection_list = ['Projects', 'Experience', 'Education', 'About_me']
 
-    for name in collection_list:
-        col = db[name]
-        docs = await col.find().to_list(length=None)
-        for doc in docs:
-            doc['_id'] = str(doc['_id'])
-        result[name] = docs
-
-    return JSONResponse(content=result)
+@router.get('/api/v1', response_class=HTMLResponse)
+async def api_index(request: Request):
+    return templates.TemplateResponse('api_index.html', {
+        'request': request
+    })
 
 __all__ = ['router']

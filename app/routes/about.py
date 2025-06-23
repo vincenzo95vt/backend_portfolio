@@ -48,7 +48,7 @@ async def updateAboutMe(
     await collections.aboutMe.update_one({}, {'$set': data}, upsert = True)
     return RedirectResponse(url= '/dashboard', status_code=303)
 
-@router.get('/api/about_me')
+@router.get('/api/v1/about_me')
 async def raw_data():
     cursor = collections.aboutMe.find({})
     results = []

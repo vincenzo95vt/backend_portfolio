@@ -96,7 +96,7 @@ async def delete_education(id: str):
     await collections.education.delete_one({'_id': ObjectId(id)})
     return RedirectResponse('/show/education?success=deleted', status_code=303)
 
-@router.get('/api/education')
+@router.get('/api/v1/education')
 async def raw_data():
     cursor = collections.education.find({})
     results = []

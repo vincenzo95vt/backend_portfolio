@@ -96,7 +96,7 @@ async def delete_project(id: str):
     return RedirectResponse('/show/allProjects?success=deleted', status_code=303)
 
 
-@router.get('/api/projects')
+@router.get('/api/v1/projects')
 async def raw_data():
     cursor = collections.projects.find({})
     results = []

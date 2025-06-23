@@ -82,7 +82,7 @@ async def update_experience(
 async def delete_experience(id : str):
     await collections.experience.delete_one({'_id': ObjectId(id)})
     return RedirectResponse(url='/edit/experiences?success=deleted', status_code=303)
-@router.get('/api/experience')
+@router.get('/api/v1/experience')
 async def raw_data():
     cursor = collections.experience.find({})
     results = []
