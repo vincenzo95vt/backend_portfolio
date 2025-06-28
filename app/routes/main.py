@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
@@ -17,6 +17,25 @@ router = APIRouter()
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
+@router.get('/login')
+def show_login(request: Request):
+    return templates.TemplateResponse('login.html', {
+        'request': request
+    })
+
+@router.post('/login')
+async def do_login(response: Response, username: str = Form(...), password: str = Form(...)):
+    user = await collections.users.find_one({"username": username})
+
+    if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+        response = RedirectResponse(url='/dashboard', status_code=303)
+        response.set_cookie(key="username", value=username)
+        return response
+    else:
+        return templates.TemplateResponse('login.html', {
+            'request': Request,
+            'error': 'Credenciales incorrectas'
+        })
 
 
 templates = Jinja2Templates(directory='app/templates')

@@ -19,7 +19,6 @@ router = APIRouter()
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
 templates = Jinja2Templates(directory='app/templates')
-
 @router.get('/aboutMe/edit', response_class= HTMLResponse)
 async def edit_aboutMe(request: Request):
     about = await collections.aboutMe.find_one({})

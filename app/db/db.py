@@ -14,5 +14,6 @@ class Collections:
     experience = db["Experience"]
     education = db["Education"]
     aboutMe = db["About_me"]
+    users = db["Users"]
 
 collections = Collections()
