@@ -3,6 +3,11 @@
   <div class="card">
     <div class="card-header bg-primary text-white">
       <h3>🔐 Acceso al panel</h3>
+      {% if error %}
+      <div class="alert alert-danger mt-3" role="alert">
+        {{ error }}
+      </div>
+    {% endif %}
     </div>
     <div class="card-body">
       <form method="post" action="/login">

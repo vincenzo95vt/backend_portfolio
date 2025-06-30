@@ -14,4 +14,11 @@ async def create_user():
     })
     print("✅ Usuario creado correctamente")
 
-asyncio.run(create_user())
+async def get_user_by_username(username: str):
+    return await collections.users.find_one({"username": username})
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
+
+if __name__ == "__main__":
+    asyncio.run(create_user())

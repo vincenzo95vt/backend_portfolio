@@ -9,6 +9,8 @@ from typing import Optional
 from app.db.db import collections
 from dotenv import load_dotenv
 import os
+from starlette.middleware.sessions import SessionMiddleware
+import bcrypt 
 
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')
@@ -17,30 +19,29 @@ router = APIRouter()
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
-@router.get('/login')
+@router.get('/')
 def show_login(request: Request):
     return templates.TemplateResponse('login.html', {
         'request': request
     })
 
 @router.post('/login')
-async def do_login(response: Response, username: str = Form(...), password: str = Form(...)):
+async def do_login(request: Request, response: Response, username: str = Form(...), password: str = Form(...)):
     user = await collections.users.find_one({"username": username})
 
     if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-        response = RedirectResponse(url='/dashboard', status_code=303)
-        response.set_cookie(key="username", value=username)
-        return response
+        resp = RedirectResponse(url='/dashboard', status_code=303)
+        resp.set_cookie(key="username", value=username)
+        return resp
     else:
         return templates.TemplateResponse('login.html', {
-            'request': Request,
-            'error': 'Credenciales incorrectas'
+            'request': request,  
+            'error': '❌ Credenciales incorrectas'
         })
 
 
 templates = Jinja2Templates(directory='app/templates')
-#ACCEDEMOS AL INICIO O BIENVENIDA
-@router.get('/', response_class=HTMLResponse)
+@router.get('/welcome', response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("welcome.html", {"request": request})
 

@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+secret_key = os.getenv('CLAVESECRETA')
+
 
 app = FastAPI()
 
-#SEGUIR AÑADIENDO MIDDLEWARE MIRAR EN LA CONVERSACION DE CHATGPT  'BACKEND SENCILLO CON FASTAPI'
+app.add_middleware(SessionMiddleware, secretkey= secret_key)
