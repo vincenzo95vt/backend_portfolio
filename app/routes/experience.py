@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
@@ -10,6 +10,11 @@ from app.db.db import collections
 from app.db.db import db
 from dotenv import load_dotenv
 import os
+from app.middlewares.session import require_login
+
+protected_router = APIRouter(
+    dependencies=[Depends(require_login) ]
+)
 
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')

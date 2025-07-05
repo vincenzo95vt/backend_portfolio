@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from bson import ObjectId
 import motor.motor_asyncio
 from typing import Optional
+from app.middlewares.session import require_login
 from app.db.db import collections
 from app.db.db import db
 from dotenv import load_dotenv
@@ -17,6 +18,10 @@ MONGO_URI = os.getenv('MONGOCLUSTER')
 router = APIRouter()
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
+
+protected_router = APIRouter(
+    dependencies=[Depends(require_login)]
+)
 
 templates = Jinja2Templates(directory='app/templates')
 @router.get('/aboutMe/edit', response_class= HTMLResponse)

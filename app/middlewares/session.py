@@ -1,12 +1,9 @@
-from fastapi import Request, Response
+from fastapi import Request, HTTPException, status
 from fastapi.responses import RedirectResponse
 
-async def auth_middleware(request: Request, call_next):
-    protected_paths = ['/dashboard', '/edit', '/delete', '/add', '/show']
-    if any(request.url.path.startswith(path) for path in protected_paths):
-        username = request.cookies.get("username")
-        if not username:
-            return RedirectResponse(url="/login", status_code=303)
 
-    response = await call_next(request)
-    return response
+def require_login(request: Request):
+    user = request.session.get("user")
+    if not user:
+        raise HTTPException(status_code=status.HTTP_302_FOUND, headers={"Location": "/login"})
+    return user

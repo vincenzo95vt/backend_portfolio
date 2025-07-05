@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
@@ -11,7 +11,7 @@ from app.db.db import collections
 from app.db.db import db
 from dotenv import load_dotenv
 import os
-
+from app.middlewares.session import require_login
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')
 
@@ -20,7 +20,9 @@ router = APIRouter()
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 templates = Jinja2Templates(directory='app/templates')
 
-
+protected_router = APIRouter(
+    dependencies=[Depends(require_login)]
+)
 @router.get('/show/education', response_class=HTMLResponse)
 async def show_education(request: Request):
     success = request.query_params.get('success')
@@ -80,7 +82,7 @@ async def add_new_education(
     estado: str = Form(None),
     ):
     data = {
-         'titulo' : titulo,
+        'titulo' : titulo,
         'institucion' : institucion,
         'descripcion' : descripcion,
         'inicio' : inicio,

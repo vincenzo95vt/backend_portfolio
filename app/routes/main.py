@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Request, Form, Response
+from fastapi import APIRouter, Request, Form, Response, Depends, HTTPException, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
 from fastapi.responses import JSONResponse
+from app.middlewares.session import require_login
 from bson import ObjectId
 import motor.motor_asyncio
 from typing import Optional
@@ -14,12 +15,23 @@ import bcrypt
 
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')
-
+secret_key = os.getenv('CLAVESECRETA')
 router = APIRouter()
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
-@router.get('/')
+@router.on_event("startup")
+async def startup_event():
+    print("🔥 Servidor arrancado")
+    print("🔑 Clave secreta:", secret_key)
+
+@router.get("/logout")
+def logout(request: Request):
+    request.session.clear()  # 🔒 Borra todos los datos de sesión
+    return RedirectResponse(url="/login", status_code=302)
+
+
+@router.get('/login')
 def show_login(request: Request):
     return templates.TemplateResponse('login.html', {
         'request': request
@@ -41,7 +53,7 @@ async def do_login(request: Request, response: Response, username: str = Form(..
 
 
 templates = Jinja2Templates(directory='app/templates')
-@router.get('/welcome', response_class=HTMLResponse)
+@router.get('/', response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("welcome.html", {"request": request})
 
@@ -49,7 +61,7 @@ def home(request: Request):
 
 # ACCEDEMOS AL PANEL DE CONTROL
 @router.get('/dashboard', response_class=HTMLResponse)
-async def dashboard(resquest: Request):
+async def dashboard(resquest: Request, user= Depends(require_login)):
     projects = await collections.projects.find({}).to_list(length=None)
     experience = await collections.experience.find({}).to_list(length=None)
     education = await collections.education.find({}).to_list(length=None)
@@ -64,6 +76,7 @@ async def dashboard(resquest: Request):
         "request": resquest,
         'data': data
     })
+
 # COMENZAMOS A CREAR LAS APIS PARA ACCEDER A ELLAS
 
 
