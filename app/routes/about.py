@@ -24,14 +24,15 @@ protected_router = APIRouter(
 )
 
 templates = Jinja2Templates(directory='app/templates')
-@router.get('/aboutMe/edit', response_class= HTMLResponse)
+@protected_router.get('/aboutMe/edit', response_class= HTMLResponse)
 async def edit_aboutMe(request: Request):
+    print('entrando en aboutme')
     about = await collections.aboutMe.find_one({})
     return templates.TemplateResponse('about_edit.html',{
         'request': request,
         'about': about
     })
-@router.post('/update/aboutMe')
+@protected_router.post('/update/aboutMe')
 async def updateAboutMe(
     nombre: str = Form(...),
     titulo: str = Form(...),
@@ -52,14 +53,5 @@ async def updateAboutMe(
     await collections.aboutMe.update_one({}, {'$set': data}, upsert = True)
     return RedirectResponse(url= '/dashboard', status_code=303)
 
-@router.get('/api/v1/about_me')
-async def raw_data():
-    cursor = collections.aboutMe.find({})
-    results = []
-
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
 
 __all__ = ['router']

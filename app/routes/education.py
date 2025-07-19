@@ -23,7 +23,7 @@ templates = Jinja2Templates(directory='app/templates')
 protected_router = APIRouter(
     dependencies=[Depends(require_login)]
 )
-@router.get('/show/education', response_class=HTMLResponse)
+@protected_router.get('/show/education', response_class=HTMLResponse)
 async def show_education(request: Request):
     success = request.query_params.get('success')
     educations = await collections.education.find({}).to_list(length=None)
@@ -35,7 +35,7 @@ async def show_education(request: Request):
         'success': success
     })
 
-@router.get('/show/updateEducation/{id}', response_class= HTMLResponse)
+@protected_router.get('/show/updateEducation/{id}', response_class= HTMLResponse)
 async def show_update_experience(id: str, request: Request):
     education = await collections.education.find_one({'_id': ObjectId(id)})
     return templates.TemplateResponse('edit_education.html', {
@@ -43,7 +43,7 @@ async def show_update_experience(id: str, request: Request):
         'education': education
     })
 
-@router.post('/update/education/{id}')
+@protected_router.post('/update/education/{id}')
 async def update_education(
     id: str,
     titulo: str = Form(...),
@@ -65,14 +65,14 @@ async def update_education(
     await collections.education.update_one({'_id': ObjectId(id)}, {'$set': data})
     return RedirectResponse('/show/education?success=updated', status_code=303)
 
-@router.get('/show/add_new_education', response_class= HTMLResponse)
+@protected_router.get('/show/add_new_education', response_class= HTMLResponse)
 async def show_add_new_education(request: Request):
     return templates.TemplateResponse('edit_education.html', {
         'request': request,
         'education': {}
     })
 
-@router.post('/add/new_education')
+@protected_router.post('/add/new_education')
 async def add_new_education(
     titulo: str = Form(...),
     institucion: str = Form(...),
@@ -93,20 +93,11 @@ async def add_new_education(
     await collections.education.insert_one(data)
     return RedirectResponse('/show/education?success=added', status_code=303)
 
-@router.post('/delete/education/{id}')
+@protected_router.post('/delete/education/{id}')
 async def delete_education(id: str):
     await collections.education.delete_one({'_id': ObjectId(id)})
     return RedirectResponse('/show/education?success=deleted', status_code=303)
 
-@router.get('/api/v1/education')
-async def raw_data():
-    cursor = collections.education.find({})
-    results = []
-
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
 
 
 __all__ = ['router']

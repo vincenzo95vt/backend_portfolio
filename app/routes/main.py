@@ -42,15 +42,13 @@ async def do_login(request: Request, response: Response, username: str = Form(..
     user = await collections.users.find_one({"username": username})
 
     if user and bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
-        resp = RedirectResponse(url='/dashboard', status_code=303)
-        resp.set_cookie(key="username", value=username)
-        return resp
+        request.session["username"] = username
+        return RedirectResponse(url='/dashboard', status_code=303)
     else:
         return templates.TemplateResponse('login.html', {
             'request': request,  
             'error': '❌ Credenciales incorrectas'
         })
-
 
 templates = Jinja2Templates(directory='app/templates')
 @router.get('/', response_class=HTMLResponse)
@@ -80,10 +78,5 @@ async def dashboard(resquest: Request, user= Depends(require_login)):
 # COMENZAMOS A CREAR LAS APIS PARA ACCEDER A ELLAS
 
 
-@router.get('/api/v1', response_class=HTMLResponse)
-async def api_index(request: Request):
-    return templates.TemplateResponse('api_index.html', {
-        'request': request
-    })
 
 __all__ = ['router']

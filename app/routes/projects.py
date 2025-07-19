@@ -26,7 +26,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 templates = Jinja2Templates(directory='app/templates')
 
 
-@router.get('/show/allProjects', response_class= HTMLResponse)
+@protected_router.get('/show/allProjects', response_class= HTMLResponse)
 async def show_all_projects(request: Request):
     success = request.query_params.get('success')
     projects = await collections.projects.find({}).to_list(length=None)
@@ -36,7 +36,7 @@ async def show_all_projects(request: Request):
         'success': success
     })
 
-@router.get('/show/editProject/{id}')
+@protected_router.get('/show/editProject/{id}')
 async def show_project(id: str, request: Request):
     project = await collections.projects.find_one({'_id': ObjectId(id)})
     return templates.TemplateResponse('edit_project.html',{
@@ -44,7 +44,7 @@ async def show_project(id: str, request: Request):
         'project': project
     })
 
-@router.post('/update/project/{id}')
+@protected_router.post('/update/project/{id}')
 async def update_project(
     id: str,
     nombre: str = Form(...),
@@ -67,7 +67,7 @@ async def update_project(
     await collections.projects.update_one({'_id': ObjectId(id)}, {'$set': data})
     return RedirectResponse('/show/allProjects?success=updated', status_code=303)
 
-@router.post('/add/new_project')
+@protected_router.post('/add/new_project')
 async def add_new_project(
     nombre: str = Form(...),
     descripcion: str = Form(...),
@@ -88,27 +88,18 @@ async def add_new_project(
     }
     await collections.projects.insert_one(data)
     return RedirectResponse('/show/allProjects?success=added', status_code=303)
-@router.get('/show/newProject', response_class=HTMLResponse)
+@protected_router.get('/show/newProject', response_class=HTMLResponse)
 def show_new_project(request: Request):
     return templates.TemplateResponse('edit_project.html', {
         'request': request,
         'project': {}
     })
 
-@router.post('/delete/project/{id}')
+@protected_router.post('/delete/project/{id}')
 async def delete_project(id: str):
     await collections.projects.delete_one({'_id': ObjectId(id)})
     return RedirectResponse('/show/allProjects?success=deleted', status_code=303)
 
 
-@router.get('/api/v1/projects')
-async def raw_data():
-    cursor = collections.projects.find({})
-    results = []
 
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
-    
 __all__ = ['router']
