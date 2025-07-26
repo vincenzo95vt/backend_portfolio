@@ -1,8 +1,10 @@
+{% extends 'base.html' %}
+
 {% block content %}
-<div class="container mt-5">
+<div class="container full-height">
   <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow">
+    <div class="col-md-6 col-lg-5">
+      <div class="card  border-1">
         <div class="card-header bg-primary text-white text-center">
           <h3 class="mb-0">🔐 Acceso al panel</h3>
         </div>
@@ -11,7 +13,7 @@
           {{ error }}
         </div>
         {% endif %}
-        <div class="card-body">
+        <div class="card-body bg-dark text-white">
           <form method="post" action="/login">
             <div class="mb-3">
               <label for="username" class="form-label">Usuario</label>
