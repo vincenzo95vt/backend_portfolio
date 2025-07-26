@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if success %}
+  <div id="flash-message" class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+    {% if success == 'added' %}
+      ✅ Proyecto añadido correctamente.
+    {% elif success == 'deleted' %}
+      🗑️ Proyecto eliminado correctamente.
+    {% elif success == 'updated' %}
+      ✅ Proyecto actualizado correctamente.
+    {% endif %}
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const flash = document.getElementById('flash-message');
+      if (flash) flash.classList.remove('show');
+    }, 2500);
+    setTimeout(() => {
+      const flash = document.getElementById('flash-message');
+      if (flash) flash.remove();
+    }, 3000);
+  </script>
+{% endif %}
+
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">🗂️ Mis Proyectos</h3>
+    </div>
+    <div class="card-body text-dark bg-light">
+
+      {% if projects %}
+        <ul class="list-group">
+          {% for project in projects %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ project['nombre'] }}</strong><br>
+                <small class="text-muted">{{ project['descripcion'] }}</small>
+              </div>
+              <div class="d-flex flex-row gap-2">
+                <a href="/show/editProject/{{ project['_id'] }}" class="btn btn-outline-primary btn-sm">✏️ Editar</a>
+                <form method="post" action="/delete/project/{{ project['_id'] }}">
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que quieres eliminar este proyecto?')">❌ Eliminar</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <a href="/show/newProject" class="btn btn-primary align-self-end mt-3 btn-sm">➕ Añadir proyecto</a>
+      {% else %}
+        <p>No hay proyectos aún.</p>
+      {% endif %}
+
+      <a href="/dashboard" class="btn btn-secondary mt-3">Volver</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

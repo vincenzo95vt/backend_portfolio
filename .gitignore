@@ -1,0 +1,36 @@
+# Entorno virtual
+venv/
+ENV/
+env/
+.venv/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos temporales o de backup
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Configs locales
+*.env
+.env.*
+
+# __editor config__
+.vscode/
+.idea/
+
+# Archivos personales
+*.sqlite3
+*.db
+*.json
+
+# __FastAPI static/cache (si lo usas en futuro)__
+static/cache/

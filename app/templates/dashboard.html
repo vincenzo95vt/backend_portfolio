@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- CONTENIDO -->
+<div class="container-fluid py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+
+      <div class="card shadow-sm" >
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">🛠 Panel de Control del Portfolio</h3>
+        </div>
+        <div class="card-body">
+          <!-- SOBRE MÍ -->
+          <h5 class="text-dark fs-4 fs-md-3 section-title" data-bs-toggle="collapse" style="cursor: pointer;" data-bs-target="#collapseAboutMe">🧠 Sobre mí</h5>
+          <div class="collapse" id="collapseAboutMe">
+            <div class="card card-body text-dark bg-light">
+              <ul class="list-unstyled d-flex flex-wrap gap-2">
+                <li><a href="/aboutMe/edit" class="btn btn-outline-secondary btn-sm">Actualizar Datos</a></li>
+              </ul>
+            </div>
+          </div>
+          <!-- EDUCACIÓN -->
+          <h5 class="text-dark mt-4 fs-4 fs-md-3 section-title" data-bs-toggle="collapse" style="cursor: pointer;" data-bs-target="#collapseEducation">🎓 Educación</h5>
+          <div class="collapse" id="collapseEducation">
+            <div class="card card-body text-dark bg-light">
+              <ul class="list-unstyled d-flex flex-wrap gap-2">
+                <li><a href="/show/education" class="btn btn-outline-secondary btn-sm">Actualizar Formación</a></li>
+              </ul>
+            </div>
+          </div>
+          <!-- EXPERIENCIA -->
+          <h5 class="text-dark mt-4 fs-4 fs-md-3 section-title" data-bs-toggle="collapse" style="cursor: pointer;" data-bs-target="#collapseExperience">💼 Experiencia</h5>
+          <div class="collapse" id="collapseExperience">
+            <div class="card card-body text-dark bg-light">
+              <ul class="list-unstyled d-flex flex-wrap gap-2">
+                <li><a href="/edit/experiences" class="btn btn-outline-secondary btn-sm">Actualizar Experiencia</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- PROYECTOS -->
+          <h5 class="text-dark mt-4 fs-4 fs-md-3 section-title" data-bs-toggle="collapse" style="cursor: pointer;" data-bs-target="#collapseProjects">🗂️ Proyectos</h5>
+          <div class="collapse" id="collapseProjects">
+            <div class="card card-body text-dark bg-light">
+              <ul class="list-unstyled d-flex flex-wrap gap-2">
+                <li><a href="/show/allProjects" class="btn btn-outline-secondary btn-sm">Actualizar Proyecto</a></li>
+              </ul>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+</body>
+</html>
+
+
+
+
+
+
+<!-- <form method="post" action="/update">
+                            {% if data['about_me'] %}
+                        <h5 class="text-dark">🧠 Sobre mí</h5>
+
+                        <div class="border p-3 rounded mb-3 bg-light text-dark">
+                            <div class="mb-2">
+                                <label class="form-label">Nombre:</label>
+                                <input type="text" class="form-control" name="aboutMe[nombre]" value="{{ data['about_me']['nombre'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Título:</label>
+                                <input type="text" class="form-control" name="aboutMe[titulo]" value="{{ data['about_me']['titulo'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Descripción:</label>
+                                <textarea class="form-control" name="aboutMe[descripcion]">{{ data['about_me']['descripcion'] }}</textarea>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Soft Skills (coma separada):</label>
+                                <input type="text" class="form-control" name="aboutMe[softSkills]" value="{{ ', '.join(data['about_me']['softSkills']) }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Hard Skills (coma separada):</label>
+                                <input type="text" class="form-control" name="aboutMe[hardSkills]" value="{{ ', '.join(data['about_me']['hardSkills']) }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Idiomas (coma separada):</label>
+                                <input type="text" class="form-control" name="aboutMe[idiomas]" value="{{ ', '.join(data['about_me']['idiomas']) }}">
+                            </div>
+                        </div>
+
+                        {%endif%}
+
+                        <h5 class="text-dark">🗂️ Proyectos</h5>
+
+                        {% for project in data['projects'] %}
+                        <div class="border p-3 rounded mb-3 bg-light text-dark">
+                            <div class="mb-2">
+                                <label class="form-label">Nombre:</label>
+                                <input type="text" class="form-control" name="projects[{{ loop.index0 }}][nombre]" value="{{ project['nombre'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Descripción:</label>
+                                <textarea class="form-control" name="projects[{{ loop.index0 }}][descripcion]">{{ project['descripcion'] }}</textarea>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Tecnologías (coma separada):</label>
+                                <input type="text" class="form-control" name="projects[{{ loop.index0 }}][tecnologias]" value="{{ ', '.join(project['tecnologias']) }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">GitHub:</label>
+                                <input type="url" class="form-control" name="projects[{{ loop.index0 }}][github]" value="{{ project['github'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">GitHub Backend:</label>
+                                <input type="url" class="form-control" name="projects[{{ loop.index0 }}][githubBackend]" value="{{ project['githubBackend'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Link:</label>
+                                <input type="url" class="form-control" name="projects[{{ loop.index0 }}][link]" value="{{ project['link'] }}">
+                            </div>
+
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" name="projects[{{ loop.index0 }}][backendOffline]" value="true"
+                                    {% if project['backendOffline'] %}checked{% endif %}>
+                                <label class="form-check-label">Backend Offline</label>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <h5 class="text-dark">💼 Experiencia</h5>
+
+                        {% for exp in data['experience'] %}
+                        <div class="border p-3 rounded mb-3 bg-light text-dark">
+                            <div class="mb-2">
+                                <label class="form-label">Empresa:</label>
+                                <input type="text" class="form-control" name="experience[{{ loop.index0 }}][empresa]" value="{{ exp['empresa'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Periodo:</label>
+                                <input type="text" class="form-control" name="experience[{{ loop.index0 }}][periodo]" value="{{ exp['periodo'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Puesto:</label>
+                                <input type="text" class="form-control" name="experience[{{ loop.index0 }}][puesto]" value="{{ exp['puesto'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Descripción:</label>
+                                <textarea class="form-control" name="experience[{{ loop.index0 }}][descripcion]">{{ exp['descripcion'] }}</textarea>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Tecnologías (coma separada):</label>
+                                <input type="text" class="form-control" name="experience[{{ loop.index0 }}][tecnologias]" value="{{ ', '.join(exp['tecnologias']) }}">
+                            </div>
+                        </div>
+                        {% endfor %}
+
+
+                       <h5 class="text-dark">🎓 Educación</h5>
+
+                        {% for edu in data['education'] %}
+                        <div class="border p-3 rounded mb-3 bg-light text-dark">
+                            <div class="mb-2">
+                                <label class="form-label">Título:</label>
+                                <input type="text" class="form-control" name="education[{{ loop.index0 }}][titulo]" value="{{ edu['titulo'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Institución:</label>
+                                <input type="text" class="form-control" name="education[{{ loop.index0 }}][institucion]" value="{{ edu['institucion'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Descripción:</label>
+                                <textarea class="form-control" name="education[{{ loop.index0 }}][descripcion]">{{ edu['descripcion'] }}</textarea>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Inicio:</label>
+                                <input type="text" class="form-control" name="education[{{ loop.index0 }}][inicio]" value="{{ edu['inicio'] }}">
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label">Fin:</label>
+                                <input type="text" class="form-control" name="education[{{ loop.index0 }}][fin]" value="{{ edu['fin'] }}">
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                    
+                        <button type="submit" class="btn btn-success">💾 Guardar cambios</button>
+                    </form> -->

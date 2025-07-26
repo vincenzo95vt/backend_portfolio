@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container full-height">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card  border-1">
+        <div class="card-header bg-primary text-white text-center">
+          <h3 class="mb-0">🔐 Acceso al panel</h3>
+        </div>
+        {% if error %}
+        <div class="alert alert-danger text-center mt-3 mx-3" role="alert">
+          {{ error }}
+        </div>
+        {% endif %}
+        <div class="card-body bg-dark text-white">
+          <form method="post" action="/login">
+            <div class="mb-3">
+              <label for="username" class="form-label">Usuario</label>
+              <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña</label>
+              <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success">Entrar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
