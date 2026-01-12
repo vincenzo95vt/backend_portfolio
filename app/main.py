@@ -9,17 +9,16 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",               # React local
-    "http://127.0.0.1:3000",               # Alternativa local
-    "http://localhost:5173",              # Si usas Vite
-    "https://vinnievasta.com",            # Tu dominio real (ajústalo)
-    "https://www.vinnievasta.com",        # Con www por si acaso
-    "https://backend-portfolio-iqkc.onrender.com",  # El subdominio de Render
+    "http://localhost:3000",               
+    "http://127.0.0.1:3000",               
+    "http://localhost:5173",             
+    "https://vinnievasta.com",           
+    "https://www.vinnievasta.com",        
+    "https://backend-portfolio-iqkc.onrender.com",  
 ]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Usa ["*"] si quieres permitir todos temporalmente
+    allow_origins=origins, 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
