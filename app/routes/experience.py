@@ -67,11 +67,13 @@ async def update_experience(
     id: str = Form(...),
     empresa: str = Form(...),
     puesto: str = Form(...),
+    periodo: str = Form(...),
     descripcion: str = Form(...),
     tecnologias: str = Form(...)
 ):
     data = {
         'empresa': empresa,
+        'periodo': periodo,
         'puesto': puesto,
         'descripcion': descripcion,
         'tecnologias': [t.strip() for t in tecnologias.split(',')]
