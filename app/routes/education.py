@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import os
 from app.middlewares.session import require_login
 from app.services import education_service
+from app.routes.forms import apply_orden_on_create, form_orden, orden_update_args
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')
 
@@ -53,6 +54,7 @@ async def update_education(
     inicio: str = Form(...),
     fin: str = Form(...),
     estado: str = Form(None),
+    orden: Optional[str] = Form(None),
     ):
     data = {
         'titulo' : titulo,
@@ -63,7 +65,7 @@ async def update_education(
     }
     if estado is not None:
         data['estado'] = estado
-    await education_service.update(id, data, missing_ok=True)
+    await education_service.update(id, data, missing_ok=True, **orden_update_args(data, form_orden(orden)))
     return RedirectResponse('/show/education?success=updated', status_code=303)
 
 @protected_router.get('/show/add_new_education', response_class= HTMLResponse)
@@ -81,6 +83,7 @@ async def add_new_education(
     inicio: str = Form(...),
     fin: str = Form(...),
     estado: str = Form(None),
+    orden: Optional[str] = Form(None),
     ):
     data = {
         'titulo' : titulo,
@@ -91,7 +94,7 @@ async def add_new_education(
     }
     if estado is not None:
         data['estado'] = estado
-    await education_service.create(data)
+    await education_service.create(apply_orden_on_create(data, form_orden(orden)))
     return RedirectResponse('/show/education?success=added', status_code=303)
 
 @protected_router.post('/delete/education/{id}')

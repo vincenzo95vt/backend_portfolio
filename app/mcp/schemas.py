@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any
 
+from app.services import ORDEN_MAX
 from pydantic import (
     AfterValidator,
     AnyHttpUrl,
@@ -57,6 +58,16 @@ StrList = Annotated[
 ]
 
 
+_ORDEN = (
+    "Posición en la web: el número más bajo aparece primero (0 o 1 = el primero). "
+    "Los elementos sin orden se muestran al final, en orden de creación. "
+    "Para reordenar, lee la lista actual y asigna un número a cada elemento; "
+    "conviene usar saltos de 10 (10, 20, 30…) para poder colocar uno nuevo entre medias "
+    "sin renumerar el resto."
+)
+Orden = Annotated[int, Field(ge=0, le=ORDEN_MAX)]
+
+
 class _Input(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -93,6 +104,7 @@ class ProjectCreate(_Input):
     github: UrlText = Field("", description=_P_GH)
     githubBackend: UrlText = Field("", description=_P_GHB)
     backendOffline: bool = Field(False, description=_P_OFF)
+    orden: Orden | None = Field(None, description=_ORDEN)
 
 
 class ProjectUpdate(_Update):
@@ -103,6 +115,7 @@ class ProjectUpdate(_Update):
     github: UrlText | None = Field(None, description=_P_GH)
     githubBackend: UrlText | None = Field(None, description=_P_GHB)
     backendOffline: bool | None = Field(None, description=_P_OFF)
+    orden: Orden | None = Field(None, description=_ORDEN)
 
 
 class Project(BaseModel):
@@ -114,6 +127,7 @@ class Project(BaseModel):
     github: str = ""
     githubBackend: str = ""
     backendOffline: bool = False
+    orden: int | None = Field(None, description="Posición en la web (menor = antes); null = sin orden, va al final")
 
 
 # --------------------------------------------------------------- Experiencia
@@ -131,6 +145,7 @@ class ExperienceCreate(_Input):
     puesto: ShortText = Field(description=_E_PUE)
     descripcion: LongText = Field(description=_E_DESC)
     tecnologias: StrList = Field(description=_E_TEC)
+    orden: Orden | None = Field(None, description=_ORDEN)
 
 
 class ExperienceUpdate(_Update):
@@ -139,6 +154,7 @@ class ExperienceUpdate(_Update):
     puesto: ShortText | None = Field(None, description=_E_PUE)
     descripcion: LongText | None = Field(None, description=_E_DESC)
     tecnologias: StrList | None = Field(None, description=_E_TEC + ". Sustituye la lista completa")
+    orden: Orden | None = Field(None, description=_ORDEN)
 
 
 class Experience(BaseModel):
@@ -148,6 +164,7 @@ class Experience(BaseModel):
     puesto: str = ""
     descripcion: str = ""
     tecnologias: list[str] = []
+    orden: int | None = Field(None, description="Posición en la web (menor = antes); null = sin orden, va al final")
 
 
 # ----------------------------------------------------------------- Educación
@@ -167,6 +184,7 @@ class EducationCreate(_Input):
     inicio: ShortText = Field(description=_ED_INI)
     fin: ShortText = Field(description=_ED_FIN)
     estado: ShortText | None = Field(None, description=_ED_EST)
+    orden: Orden | None = Field(None, description=_ORDEN)
 
 
 class EducationUpdate(_Update):
@@ -176,6 +194,7 @@ class EducationUpdate(_Update):
     inicio: ShortText | None = Field(None, description=_ED_INI)
     fin: ShortText | None = Field(None, description=_ED_FIN)
     estado: ShortText | None = Field(None, description=_ED_EST)
+    orden: Orden | None = Field(None, description=_ORDEN)
 
 
 class Education(BaseModel):
@@ -186,6 +205,7 @@ class Education(BaseModel):
     inicio: str = ""
     fin: str = ""
     estado: str | None = None
+    orden: int | None = Field(None, description="Posición en la web (menor = antes); null = sin orden, va al final")
 
 
 # ------------------------------------------------------------------ Sobre mí

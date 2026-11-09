@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import os
 from app.middlewares.session import require_login
 from app.services import experience_service, split_csv
+from app.routes.forms import apply_orden_on_create, form_orden, orden_update_args
 router = APIRouter()
 protected_router = APIRouter(
     dependencies=[Depends(require_login) ]
@@ -51,7 +52,8 @@ async def addExperience(
     periodo: str=  Form(...),
     puesto: str = Form(...),
     descripcion: str =  Form(...),
-    tecnologias: str =  Form(...)
+    tecnologias: str =  Form(...),
+    orden: Optional[str] = Form(None),
 ):
     data = {
         'empresa': empresa,
@@ -61,7 +63,7 @@ async def addExperience(
         'tecnologias': split_csv(tecnologias)
     }
 
-    await experience_service.create(data)
+    await experience_service.create(apply_orden_on_create(data, form_orden(orden)))
     return RedirectResponse(url='/edit/experiences?success=added', status_code=303)
 @protected_router.post('/update/experience')
 async def update_experience(
@@ -70,7 +72,8 @@ async def update_experience(
     puesto: str = Form(...),
     periodo: str = Form(...),
     descripcion: str = Form(...),
-    tecnologias: str = Form(...)
+    tecnologias: str = Form(...),
+    orden: Optional[str] = Form(None),
 ):
     data = {
         'empresa': empresa,
@@ -79,7 +82,7 @@ async def update_experience(
         'descripcion': descripcion,
         'tecnologias': split_csv(tecnologias)
     }
-    await experience_service.update(id, data, missing_ok=True)
+    await experience_service.update(id, data, missing_ok=True, **orden_update_args(data, form_orden(orden)))
     return RedirectResponse(url='/edit/experiences?success=updated', status_code=303)
 @protected_router.post('/delete/experience/{id}')
 async def delete_experience(id : str):

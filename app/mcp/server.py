@@ -32,6 +32,7 @@ from app.services import (
     about_service,
     education_service,
     experience_service,
+    orden_value,
     projects_service,
 )
 
@@ -41,6 +42,9 @@ Herramientas para leer y editar el contenido del portfolio personal de Pablo
 las skills y los idiomas). Todo lo que cambies se publica en la web.
 
 - Los ids se obtienen con las herramientas list_*; no los inventes.
+- Proyectos, experiencias y formación se muestran por el campo `orden`
+  (menor número primero; sin orden, al final). Las list_* ya devuelven ese orden.
+  Para reordenar, usa update_* cambiando solo `orden`.
 - Las herramientas update_* son parciales: envía solo los campos que cambian.
   Los campos de tipo lista se sustituyen enteros, así que para añadir un elemento
   lee primero el valor actual y envía la lista completa.
@@ -77,6 +81,9 @@ def _to_model(model: type[M], doc: dict[str, Any]) -> M:
         value = doc[name]
         if name == "backendOffline":
             value = value is True or str(value).strip().lower() in _TRUTHY
+        elif name == "orden":
+            number = orden_value(doc)
+            value = int(number) if number is not None and float(number).is_integer() else None
         elif field.annotation == list[str]:
             value = _as_list(value)
         elif value is None and field.default is not None:
@@ -85,6 +92,13 @@ def _to_model(model: type[M], doc: dict[str, Any]) -> M:
             value = str(value)
         data[name] = value
     return model(**data)
+
+
+def _without_empty_orden(data: dict[str, Any]) -> dict[str, Any]:
+    """Al crear sin 'orden', no se guarda el campo (igual que desde el panel)."""
+    if data.get("orden") is None:
+        data.pop("orden", None)
+    return data
 
 
 def _project_to_db(data: dict[str, Any]) -> dict[str, Any]:
@@ -129,7 +143,7 @@ def create_server(auth: AuthProvider | None = None) -> FastMCP:
 
     @mcp.tool(annotations=READ_ONLY)
     async def list_projects() -> list[Project]:
-        """Lista todos los proyectos del portfolio con todos sus campos e id."""
+        """Lista todos los proyectos con sus campos e id, en el orden en que aparecen en la web."""
         return [_to_model(Project, d) for d in await projects_service.list()]
 
     @mcp.tool(annotations=READ_ONLY)
@@ -140,7 +154,7 @@ def create_server(auth: AuthProvider | None = None) -> FastMCP:
     @mcp.tool(annotations=CREATE)
     async def create_project(project: ProjectCreate) -> Project:
         """Crea un proyecto nuevo en el portfolio y lo devuelve con su id."""
-        doc = await projects_service.create(_project_to_db(project.model_dump()))
+        doc = await projects_service.create(_project_to_db(_without_empty_orden(project.model_dump())))
         return _to_model(Project, doc)
 
     @mcp.tool(annotations=UPDATE)
@@ -153,7 +167,7 @@ def create_server(auth: AuthProvider | None = None) -> FastMCP:
 
     @mcp.tool(annotations=READ_ONLY)
     async def list_experiences() -> list[Experience]:
-        """Lista todas las experiencias laborales con todos sus campos e id."""
+        """Lista todas las experiencias laborales con sus campos e id, en el orden en que aparecen en la web."""
         return [_to_model(Experience, d) for d in await experience_service.list()]
 
     @mcp.tool(annotations=READ_ONLY)
@@ -164,7 +178,7 @@ def create_server(auth: AuthProvider | None = None) -> FastMCP:
     @mcp.tool(annotations=CREATE)
     async def create_experience(experience: ExperienceCreate) -> Experience:
         """Añade una experiencia laboral nueva y la devuelve con su id."""
-        return _to_model(Experience, await experience_service.create(experience.model_dump()))
+        return _to_model(Experience, await experience_service.create(_without_empty_orden(experience.model_dump())))
 
     @mcp.tool(annotations=UPDATE)
     async def update_experience(id: IdParam, changes: ExperienceUpdate) -> Experience:
@@ -176,7 +190,7 @@ def create_server(auth: AuthProvider | None = None) -> FastMCP:
 
     @mcp.tool(annotations=READ_ONLY)
     async def list_educations() -> list[Education]:
-        """Lista toda la formación académica (estudios, cursos) con sus campos e id."""
+        """Lista toda la formación (estudios, cursos) con sus campos e id, en el orden en que aparecen en la web."""
         return [_to_model(Education, d) for d in await education_service.list()]
 
     @mcp.tool(annotations=READ_ONLY)

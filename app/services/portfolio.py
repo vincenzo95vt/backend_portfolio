@@ -36,6 +36,47 @@ def parse_object_id(raw_id: str) -> ObjectId:
         raise InvalidIdError(str(raw_id)) from exc
 
 
+class InvalidOrdenError(ValueError):
+    """El valor de 'orden' no es un entero >= 0."""
+
+
+ORDEN_MAX = 100_000
+
+
+def parse_orden(raw: str | None) -> int | None:
+    """Valor del campo 'orden' de un formulario: vacío -> None, si no un entero 0..ORDEN_MAX."""
+    if raw is None or not raw.strip():
+        return None
+    try:
+        value = int(raw.strip())
+    except ValueError:
+        raise InvalidOrdenError(f"'orden' debe ser un número entero, no '{raw}'") from None
+    if not 0 <= value <= ORDEN_MAX:
+        raise InvalidOrdenError(f"'orden' debe estar entre 0 y {ORDEN_MAX}")
+    return value
+
+
+def orden_value(doc: dict[str, Any]) -> int | float | None:
+    """El 'orden' del documento si es numérico; cualquier otra cosa cuenta como "sin orden"."""
+    value = doc.get("orden")
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return value
+
+
+def sort_by_orden(docs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Menor 'orden' primero; los documentos sin 'orden' al final.
+
+    sorted() es estable: en empates (y entre los que no tienen 'orden') se conserva
+    el orden en que Mongo los devuelve, es decir, el de inserción, como antes.
+    """
+    def key(doc):
+        value = orden_value(doc)
+        return (1, 0) if value is None else (0, value)
+
+    return sorted(docs, key=key)
+
+
 def split_csv(value: str) -> list[str]:
     """'a, b ,c' -> ['a', 'b', 'c'] (mismo comportamiento que tenían los formularios)."""
     return [item.strip() for item in value.split(",")]
@@ -57,7 +98,8 @@ class CollectionService:
         return getattr(collections, self._collection_attr)
 
     async def list(self) -> list[dict[str, Any]]:
-        return [serialize(doc) async for doc in self.collection.find({})]
+        """Todos los documentos, ordenados por 'orden' (los que no lo tienen, al final)."""
+        return sort_by_orden([serialize(doc) async for doc in self.collection.find({})])
 
     async def find(self, raw_id: str) -> dict[str, Any] | None:
         doc = await self.collection.find_one({"_id": parse_object_id(raw_id)})
@@ -76,11 +118,23 @@ class CollectionService:
         return doc
 
     async def update(
-        self, raw_id: str, data: dict[str, Any], *, missing_ok: bool = False
+        self,
+        raw_id: str,
+        data: dict[str, Any],
+        *,
+        unset: tuple[str, ...] = (),
+        missing_ok: bool = False,
     ) -> dict[str, Any] | None:
-        """``$set`` parcial. Lanza NotFoundError si no existe (salvo ``missing_ok``)."""
+        """``$set`` parcial (y ``$unset`` de ``unset``). Lanza NotFoundError si no existe (salvo ``missing_ok``)."""
         oid = parse_object_id(raw_id)
-        result = await self.collection.update_one({"_id": oid}, {"$set": data})
+        operations: dict[str, Any] = {}
+        if data:
+            operations["$set"] = data
+        if unset:
+            operations["$unset"] = {field: "" for field in unset}
+        if not operations:
+            return await self.get(raw_id)
+        result = await self.collection.update_one({"_id": oid}, operations)
         if result.matched_count == 0:
             if missing_ok:
                 return None

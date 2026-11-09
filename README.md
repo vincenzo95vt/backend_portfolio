@@ -73,6 +73,7 @@ Si falta cualquiera de las variables "Para MCP", o si `MCP_JWT_SIGNING_KEY` es d
 | Sobre mí (skills, idiomas…) | `get_about_me`, `update_about_me` (documento único, sin list/create) |
 
 - **No hay herramientas de borrado.** Para borrar se usa el panel.
+- **Orden:** proyectos, experiencia y formación tienen un campo opcional `orden` (entero de 0 a 100000; el número más bajo aparece primero). Los elementos sin `orden` van al final, en orden de creación. Las herramientas `list_*`, la API `/api/v1/*` y el panel devuelven los datos ya ordenados. Se puede cambiar desde `create_*`/`update_*` o desde los formularios del panel; en el panel, dejar el campo vacío al editar quita el orden.
 - Los `update_*` son parciales: solo cambian los campos enviados. Los campos de lista (`tecnologias`, `hardSkills`…) se sustituyen enteros.
 - Las entradas se validan con Pydantic: textos no vacíos, URLs http(s), listas no vacías y sin campos desconocidos. Los errores indican qué campo ha fallado y por qué. Los ids que no existen o son inválidos devuelven un mensaje que indica qué `list_*` usar.
 - Las herramientas reutilizan la misma capa de servicios que el panel ([app/services/portfolio.py](app/services/portfolio.py)), así que se guardan los mismos formatos que lee el frontend.

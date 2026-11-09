@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import os
 from app.middlewares.session import require_login
 from app.services import projects_service, split_csv
+from app.routes.forms import apply_orden_on_create, form_orden, orden_update_args
 
 protected_router = APIRouter(
     dependencies=[Depends(require_login)]
@@ -54,7 +55,8 @@ async def update_project(
     link: str = Form(...),
     github: str = Form(...),
     githubBackend: str = Form(...),
-    backendOffline: Optional[str] = Form(None)
+    backendOffline: Optional[str] = Form(None),
+    orden: Optional[str] = Form(None),
 ):
     data = {
         'nombre': nombre,
@@ -65,7 +67,7 @@ async def update_project(
         'githubBackend': githubBackend,
         'backendOffline': backendOffline
     }
-    await projects_service.update(id, data, missing_ok=True)
+    await projects_service.update(id, data, missing_ok=True, **orden_update_args(data, form_orden(orden)))
     return RedirectResponse('/show/allProjects?success=updated', status_code=303)
 
 @protected_router.post('/add/new_project')
@@ -76,7 +78,8 @@ async def add_new_project(
     link: str = Form(...),
     github: str = Form(...),
     githubBackend: str = Form(...),
-    backendOffline: Optional[str] = Form(None)
+    backendOffline: Optional[str] = Form(None),
+    orden: Optional[str] = Form(None),
 ):
     data = {
         'nombre': nombre,
@@ -87,7 +90,7 @@ async def add_new_project(
         'githubBackend': githubBackend,
         'backendOffline': backendOffline
     }
-    await projects_service.create(data)
+    await projects_service.create(apply_orden_on_create(data, form_orden(orden)))
     return RedirectResponse('/show/allProjects?success=added', status_code=303)
 @protected_router.get('/show/newProject', response_class=HTMLResponse)
 def show_new_project(request: Request):
