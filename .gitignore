@@ -34,3 +34,4 @@ Thumbs.db
 
 # __FastAPI static/cache (si lo usas en futuro)__
 static/cache/
+backup/
