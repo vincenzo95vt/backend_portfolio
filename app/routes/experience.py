@@ -11,6 +11,7 @@ from app.db.db import db
 from dotenv import load_dotenv
 import os
 from app.middlewares.session import require_login
+from app.services import experience_service, split_csv
 router = APIRouter()
 protected_router = APIRouter(
     dependencies=[Depends(require_login) ]
@@ -24,8 +25,8 @@ templates = Jinja2Templates(directory='app/templates')
 @protected_router.get('/edit/experiences', response_class= HTMLResponse)
 async def showExperiences(request: Request):
     success = request.query_params.get('success')
-    experiences = await collections.experience.find().to_list(length=None)
-    return templates.TemplateResponse('experiences.html',{
+    experiences = await experience_service.list()
+    return templates.TemplateResponse(request, 'experiences.html',{
         'request': request,
         'experiences': experiences,
         'success': success
@@ -33,14 +34,14 @@ async def showExperiences(request: Request):
 
 @protected_router.get('/edit/experience/{id}', response_class=HTMLResponse)
 async def edit_experience(id: str, request:Request):
-    experience = await collections.experience.find_one({'_id': ObjectId(id)})
-    return templates.TemplateResponse('edit_experience.html', {
+    experience = await experience_service.find(id)
+    return templates.TemplateResponse(request, 'edit_experience.html', {
         'request': request,
         'experience': experience
     })
 @protected_router.get('/add/new_experience', response_class=HTMLResponse)
 async def add_experience(request: Request):
-    return templates.TemplateResponse('edit_experience.html', {
+    return templates.TemplateResponse(request, 'edit_experience.html', {
         'request': request,
         'experience': {}
     })
@@ -57,10 +58,10 @@ async def addExperience(
         'periodo' : periodo,
         'puesto': puesto,
         'descripcion': descripcion,
-        'tecnologias': [t.strip() for t in tecnologias.split(',')]
+        'tecnologias': split_csv(tecnologias)
     }
 
-    await collections.experience.insert_one(data)
+    await experience_service.create(data)
     return RedirectResponse(url='/edit/experiences?success=added', status_code=303)
 @protected_router.post('/update/experience')
 async def update_experience(
@@ -76,15 +77,13 @@ async def update_experience(
         'periodo': periodo,
         'puesto': puesto,
         'descripcion': descripcion,
-        'tecnologias': [t.strip() for t in tecnologias.split(',')]
+        'tecnologias': split_csv(tecnologias)
     }
-    await collections.experience.update_one(
-        {'_id': ObjectId(id)},
-        {'$set': data})
+    await experience_service.update(id, data, missing_ok=True)
     return RedirectResponse(url='/edit/experiences?success=updated', status_code=303)
 @protected_router.post('/delete/experience/{id}')
 async def delete_experience(id : str):
-    await collections.experience.delete_one({'_id': ObjectId(id)})
+    await experience_service.delete(id)
     return RedirectResponse(url='/edit/experiences?success=deleted', status_code=303)
 
 __all__ = ['router']

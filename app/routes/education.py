@@ -12,6 +12,7 @@ from app.db.db import db
 from dotenv import load_dotenv
 import os
 from app.middlewares.session import require_login
+from app.services import education_service
 load_dotenv()
 MONGO_URI = os.getenv('MONGOCLUSTER')
 
@@ -26,10 +27,10 @@ protected_router = APIRouter(
 @protected_router.get('/show/education', response_class=HTMLResponse)
 async def show_education(request: Request):
     success = request.query_params.get('success')
-    educations = await collections.education.find({}).to_list(length=None)
+    educations = await education_service.list()
     if not educations:
         educations = []
-    return templates.TemplateResponse('educations.html', {
+    return templates.TemplateResponse(request, 'educations.html', {
         'request': request,
         'education': educations,
         'success': success
@@ -37,8 +38,8 @@ async def show_education(request: Request):
 
 @protected_router.get('/show/updateEducation/{id}', response_class= HTMLResponse)
 async def show_update_experience(id: str, request: Request):
-    education = await collections.education.find_one({'_id': ObjectId(id)})
-    return templates.TemplateResponse('edit_education.html', {
+    education = await education_service.find(id)
+    return templates.TemplateResponse(request, 'edit_education.html', {
         'request': request,
         'education': education
     })
@@ -62,12 +63,12 @@ async def update_education(
     }
     if estado is not None:
         data['estado'] = estado
-    await collections.education.update_one({'_id': ObjectId(id)}, {'$set': data})
+    await education_service.update(id, data, missing_ok=True)
     return RedirectResponse('/show/education?success=updated', status_code=303)
 
 @protected_router.get('/show/add_new_education', response_class= HTMLResponse)
 async def show_add_new_education(request: Request):
-    return templates.TemplateResponse('edit_education.html', {
+    return templates.TemplateResponse(request, 'edit_education.html', {
         'request': request,
         'education': {}
     })
@@ -90,12 +91,12 @@ async def add_new_education(
     }
     if estado is not None:
         data['estado'] = estado
-    await collections.education.insert_one(data)
+    await education_service.create(data)
     return RedirectResponse('/show/education?success=added', status_code=303)
 
 @protected_router.post('/delete/education/{id}')
 async def delete_education(id: str):
-    await collections.education.delete_one({'_id': ObjectId(id)})
+    await education_service.delete(id)
     return RedirectResponse('/show/education?success=deleted', status_code=303)
 
 

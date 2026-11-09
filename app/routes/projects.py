@@ -11,6 +11,7 @@ from app.db.db import db
 from dotenv import load_dotenv
 import os
 from app.middlewares.session import require_login
+from app.services import projects_service, split_csv
 
 protected_router = APIRouter(
     dependencies=[Depends(require_login)]
@@ -29,8 +30,8 @@ templates = Jinja2Templates(directory='app/templates')
 @protected_router.get('/show/allProjects', response_class= HTMLResponse)
 async def show_all_projects(request: Request):
     success = request.query_params.get('success')
-    projects = await collections.projects.find({}).to_list(length=None)
-    return templates.TemplateResponse('projects.html',{
+    projects = await projects_service.list()
+    return templates.TemplateResponse(request, 'projects.html',{
         'request': request,
         'projects': projects,
         'success': success
@@ -38,8 +39,8 @@ async def show_all_projects(request: Request):
 
 @protected_router.get('/show/editProject/{id}')
 async def show_project(id: str, request: Request):
-    project = await collections.projects.find_one({'_id': ObjectId(id)})
-    return templates.TemplateResponse('edit_project.html',{
+    project = await projects_service.find(id)
+    return templates.TemplateResponse(request, 'edit_project.html',{
         'request': request,
         'project': project
     })
@@ -58,13 +59,13 @@ async def update_project(
     data = {
         'nombre': nombre,
         'descripcion': descripcion,
-        'tecnologias': [t.strip() for t in tecnologias.split(',')],
+        'tecnologias': split_csv(tecnologias),
         'link': link,
         'github': github,
         'githubBackend': githubBackend,
         'backendOffline': backendOffline
     }
-    await collections.projects.update_one({'_id': ObjectId(id)}, {'$set': data})
+    await projects_service.update(id, data, missing_ok=True)
     return RedirectResponse('/show/allProjects?success=updated', status_code=303)
 
 @protected_router.post('/add/new_project')
@@ -80,24 +81,24 @@ async def add_new_project(
     data = {
         'nombre': nombre,
         'descripcion': descripcion,
-        'tecnologias': [t.strip() for t in tecnologias.split(',')],
+        'tecnologias': split_csv(tecnologias),
         'link': link,
         'github': github,
         'githubBackend': githubBackend,
         'backendOffline': backendOffline
     }
-    await collections.projects.insert_one(data)
+    await projects_service.create(data)
     return RedirectResponse('/show/allProjects?success=added', status_code=303)
 @protected_router.get('/show/newProject', response_class=HTMLResponse)
 def show_new_project(request: Request):
-    return templates.TemplateResponse('edit_project.html', {
+    return templates.TemplateResponse(request, 'edit_project.html', {
         'request': request,
         'project': {}
     })
 
 @protected_router.post('/delete/project/{id}')
 async def delete_project(id: str):
-    await collections.projects.delete_one({'_id': ObjectId(id)})
+    await projects_service.delete(id)
     return RedirectResponse('/show/allProjects?success=deleted', status_code=303)
 
 

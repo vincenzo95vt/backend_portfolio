@@ -7,6 +7,7 @@ from bson import ObjectId
 import motor.motor_asyncio
 from typing import Optional
 from app.db.db import collections
+from app.services import about_service, education_service, experience_service, projects_service
 from app.db.db import db
 from dotenv import load_dotenv
 import os
@@ -19,46 +20,22 @@ templates = Jinja2Templates(directory='app/templates')
 
 @router.get('/api/v1', response_class=HTMLResponse)
 async def api_index(request: Request):
-    return templates.TemplateResponse('api_index.html', {
+    return templates.TemplateResponse(request, 'api_index.html', {
         'request': request
     })
 @router.get('/api/v1/about_me')
 async def about_data():
-    cursor = collections.aboutMe.find({})
-    results = []
-
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
+    return await about_service.list()
 
 @router.get('/api/v1/education')
 async def education_data():
-    cursor = collections.education.find({})
-    results = []
-
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
+    return await education_service.list()
 @router.get('/api/v1/experience')
 async def experience_data():
-    cursor = collections.experience.find({})
-    results = []
-
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
+    return await experience_service.list()
 
 @router.get('/api/v1/projects')
 async def projects_data():
-    cursor = collections.projects.find({})
-    results = []
-
-    async for doc in cursor:
-        doc['_id'] = str(doc['_id'])
-        results.append(doc)
-    return results
+    return await projects_service.list()
 
 __all__ = ['router']

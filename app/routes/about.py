@@ -8,6 +8,7 @@ import motor.motor_asyncio
 from typing import Optional
 from app.middlewares.session import require_login
 from app.db.db import collections
+from app.services import about_service, split_csv
 from app.db.db import db
 from dotenv import load_dotenv
 import os
@@ -27,8 +28,8 @@ templates = Jinja2Templates(directory='app/templates')
 @protected_router.get('/aboutMe/edit', response_class= HTMLResponse)
 async def edit_aboutMe(request: Request):
     print('entrando en aboutme')
-    about = await collections.aboutMe.find_one({})
-    return templates.TemplateResponse('about_edit.html',{
+    about = await about_service.get()
+    return templates.TemplateResponse(request, 'about_edit.html',{
         'request': request,
         'about': about
     })
@@ -45,12 +46,12 @@ async def updateAboutMe(
         'nombre': nombre,
         'titulo': titulo,
         'descripcion': descripcion,
-        'softSkills': [s.strip() for s in softSkills.split(',')],
-        'hardSkills': [h.strip() for h in hardSkills.split(',')],
-        'idiomas': [i.strip() for i in idiomas.split(',')]
+        'softSkills': split_csv(softSkills),
+        'hardSkills': split_csv(hardSkills),
+        'idiomas': split_csv(idiomas)
     }
 
-    await collections.aboutMe.update_one({}, {'$set': data}, upsert = True)
+    await about_service.update(data)
     return RedirectResponse(url= '/dashboard', status_code=303)
 
 

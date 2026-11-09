@@ -8,6 +8,7 @@ from bson import ObjectId
 import motor.motor_asyncio
 from typing import Optional
 from app.db.db import collections
+from app.services import about_service, education_service, experience_service, projects_service
 from dotenv import load_dotenv
 import os
 from starlette.middleware.sessions import SessionMiddleware
@@ -20,11 +21,6 @@ router = APIRouter()
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 
-@router.on_event("startup")
-async def startup_event():
-    print("🔥 Servidor arrancado")
-    print("🔑 Clave secreta:", secret_key)
-
 @router.get("/logout")
 def logout(request: Request):
     request.session.clear()  # 🔒 Borra todos los datos de sesión
@@ -33,7 +29,7 @@ def logout(request: Request):
 
 @router.get('/login')
 def show_login(request: Request):
-    return templates.TemplateResponse('login.html', {
+    return templates.TemplateResponse(request, 'login.html', {
         'request': request
     })
 
@@ -45,7 +41,7 @@ async def do_login(request: Request, response: Response, username: str = Form(..
         request.session["username"] = username
         return RedirectResponse(url='/dashboard', status_code=303)
     else:
-        return templates.TemplateResponse('login.html', {
+        return templates.TemplateResponse(request, 'login.html', {
             'request': request,  
             'error': '❌ Credenciales incorrectas'
         })
@@ -53,24 +49,24 @@ async def do_login(request: Request, response: Response, username: str = Form(..
 templates = Jinja2Templates(directory='app/templates')
 @router.get('/', response_class=HTMLResponse)
 def home(request: Request):
-    return templates.TemplateResponse("welcome.html", {"request": request})
+    return templates.TemplateResponse(request, "welcome.html", {"request": request})
 
 
 
 # ACCEDEMOS AL PANEL DE CONTROL
 @router.get('/dashboard', response_class=HTMLResponse)
 async def dashboard(resquest: Request, user= Depends(require_login)):
-    projects = await collections.projects.find({}).to_list(length=None)
-    experience = await collections.experience.find({}).to_list(length=None)
-    education = await collections.education.find({}).to_list(length=None)
-    about_me = await collections.aboutMe.find_one({})
+    projects = await projects_service.list()
+    experience = await experience_service.list()
+    education = await education_service.list()
+    about_me = await about_service.get()
     data = {
         'projects': projects,
         'experience': experience,
         'education': education,
         'about_me': about_me,
     }
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse(resquest, "dashboard.html", {
         "request": resquest,
         'data': data
     })
